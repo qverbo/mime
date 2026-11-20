@@ -14,10 +14,10 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Configure
-        run: cmake -B build -G "Visual Studio 17 2022" -A x64
+        run: cmake -B build -A x64
 
       - name: Build
         run: cmake --build build --config Release --target MIME_VST3 MIME_Standalone --parallel
@@ -32,7 +32,7 @@ jobs:
           Compress-Archive -Path dist/* -DestinationPath MIME-Windows.zip
 
       - name: Upload build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: MIME-Windows
           path: MIME-Windows.zip
