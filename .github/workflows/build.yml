@@ -30,12 +30,16 @@ jobs:
           Copy-Item "build/MIME_artefacts/Release/Standalone/MIME.exe" "dist/MIME Standalone.exe"
           Copy-Item "README.md" "dist/README.md"
           Compress-Archive -Path dist/* -DestinationPath MIME-Windows.zip
+          # single-file .vst3 (the DLL inside the bundle) for drag-and-drop installs
+          Copy-Item "build/MIME_artefacts/Release/VST3/MIME.vst3/Contents/x86_64-win/MIME.vst3" "MIME.vst3"
 
       - name: Upload build
         uses: actions/upload-artifact@v5
         with:
           name: MIME-Windows
-          path: MIME-Windows.zip
+          path: |
+            MIME-Windows.zip
+            MIME.vst3
 
       - name: Publish release
         if: github.event_name == 'push'
@@ -47,4 +51,6 @@ jobs:
           body: |
             Download **MIME-Windows.zip**, unzip, and copy `MIME.vst3` to `C:\Program Files\Common Files\VST3\`.
             Then rescan plugins in FL Studio. See the README for setup.
-          files: MIME-Windows.zip
+          files: |
+            MIME.vst3
+            MIME-Windows.zip
