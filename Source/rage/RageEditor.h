@@ -43,7 +43,8 @@ private:
     juce::ComboBox modeBox;
     juce::Label modeLabel;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> modeAtt;
-    juce::TextButton tapButton { "TAP" }, learnButton { "LEARN 808" };
+    juce::TextButton tapButton { "TAP" }, learnButton { "LEARN 808" }, trig808 { "808" }, trigKick { "KICK" };
+    int shownTrigger = -1;
     juce::ToggleButton listenToggle { "Hear detector" }, autoGainToggle { "Auto Gain" };
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> listenAtt, autoGainAtt;
 

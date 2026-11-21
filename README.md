@@ -62,7 +62,9 @@ JUCE 8 is downloaded automatically. Pushing to `main` builds Windows on GitHub A
 
 # FILIPINA RAGE
 
-**Crunches your vocal every time the 808 hits.** Dedicated to my beautiful girlfriend.
+**Crunches your vocal every time the 808 (or the kick) hits.** Dedicated to my beautiful girlfriend.
+
+Pick what triggers it at the top of the scope: **808** for trap and rage (long booming bass hits), or **KICK** for dance, house and four-on-the-floor (short punchy hits; works even with a bassline under the kick). Clicking either one loads matching timing.
 
 Put it on your vocal, feed the beat (or just the 808 track) into its sidechain, and the vocal gets distorted only when the 808 lands. Between hits the vocal stays clean, or as dirty as you set **Idle**.
 
@@ -71,7 +73,9 @@ Put it on your vocal, feed the beat (or just the 808 track) into its sidechain, 
 2. Put FILIPINA RAGE on your **vocal** insert.
 3. Select the **808** (or beat) mixer track, then right-click the arrow at the bottom of the vocal track → **Sidechain to this track**.
 4. In FILIPINA RAGE's wrapper (gear icon) → **Processing**, set the sidechain input to that track.
-5. Play the beat and hit **LEARN 808**. It finds your 808 and tunes the detector in about 6 seconds.
+5. Pick **808** or **KICK**, play the beat and hit **LEARN**. It finds your 808 or kick and tunes the detector in about 6 seconds.
+
+**Tip for KICK mode:** if your kick is on its own mixer track, sidechain just that track. Detection is then basically perfect. On a full beat, keep Sensitivity around 40%; higher can start catching bass notes.
 
 ## Controls
 | | |
@@ -83,7 +87,8 @@ Put it on your vocal, feed the beat (or just the 808 track) into its sidechain, 
 | **Idle** | Crunch between hits (0 = clean) |
 | **Attack / Hold / Release** | How fast it grabs, how long it stays, how long it fades |
 | **Mode** | *Hit*: every 808 fires a crunch. *Follow*: the crunch rides the 808's volume (long 808s keep crunching) |
-| **Sensitivity** | Higher = quieter 808s trigger too |
-| **808 Freq** | Where the detector listens (LEARN 808 sets it) |
+| **Trigger On** | 808 (long bass hits) or KICK (short punchy hits) |
+| **Sensitivity** | Higher = quieter hits trigger too |
+| **808 / Kick Freq** | Where the detector listens (LEARN sets it) |
 | **Hear detector** | Hear what the detector hears, for tuning. Turn it off after! |
 | **TAP** | Fire a hit by hand to audition the crunch |

@@ -8,7 +8,29 @@ using namespace rage;
 
 int main (int argc, char** argv)
 {
-    if (argc < 2) { std::cout << "usage: rage_cli <beat> [outDir]\n"; return 1; }
+    if (argc < 2) { std::cout << "usage: rage_cli <beat> [outDir]  |  rage_cli --count <sc.wav> <trigger 0/1> <sens> <freq>\n"; return 1; }
+    if (juce::String (argv[1]) == "--count")
+    {
+        juce::AudioFormatManager fm; fm.registerBasicFormats();
+        std::unique_ptr<juce::AudioFormatReader> rd (fm.createReaderFor (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2])));
+        const int len = (int) rd->lengthInSamples;
+        juce::AudioBuffer<float> sc (2, len); rd->read (&sc, 0, len, 0, true, true);
+        RageEngine e; e.prepare (rd->sampleRate, 512, 2);
+        RageSettings s; s.trigger = juce::String (argv[3]).getIntValue(); s.sensitivity = juce::String (argv[4]).getFloatValue();
+        s.detectHz = juce::String (argv[5]).getFloatValue(); e.setSettings (s);
+        juce::AudioBuffer<float> v (2, 512);
+        std::vector<int> hitsAt; int last = 0;
+        for (int pos = 0; pos + 512 <= len; pos += 512)
+        {
+            v.clear();
+            e.process (v, sc.getReadPointer (0, pos), sc.getReadPointer (1, pos), 512);
+            if (e.hitCount.load() != last) { last = e.hitCount.load(); hitsAt.push_back (pos); }
+        }
+        std::cout << e.hitCount.load();
+        for (auto h : hitsAt) std::cout << " " << h;
+        std::cout << "\n";
+        return 0;
+    }
     juce::AudioFormatManager fm; fm.registerBasicFormats();
     std::unique_ptr<juce::AudioFormatReader> rd (fm.createReaderFor (juce::File::getCurrentWorkingDirectory().getChildFile (argv[1])));
     if (! rd) return 1;

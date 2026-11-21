@@ -29,8 +29,13 @@ void RageEngine::prepare (double sampleRate, int maxBlock, int numChannels)
     detBuf.assign ((size_t) maxBlock + 16, 0.0f);
 
     detEnv.set (0.0005f, 0.025f, (float) rate);
+    kickSmooth1.set (40.0f, 0.707f, (float) rate);
+    kickSmooth2.set (40.0f, 0.707f, (float) rate);
+    kickLag = juce::jmax (1, (int) (0.015 * rate));
+    kickHist.prepare (kickLag + 2);
     detHP.set (25.0f, 0.707f, (float) rate);
     peakDecay = std::exp (-1.0f / (2.0f * (float) rate));
+    kickPeakDecay = std::exp (-1.0f / (8.0f * (float) rate));
 
     for (int i = 0; i < (int) learnBands.size(); ++i)
     {
@@ -60,8 +65,8 @@ void RageEngine::reset()
 {
     for (auto& c : ch) c.reset();
     if (os) os->reset();
-    detLP1.reset(); detLP2.reset(); detHP.reset(); detEnv.reset();
-    runPeak = 1.0e-4f; armed = true; stage = 0; env = 0; followEnv = 0;
+    detLP1.reset(); detLP2.reset(); detHP.reset(); detEnv.reset(); kickSmooth1.reset(); kickSmooth2.reset(); kickHP.reset(); kickHist.reset(); sinceTrig = 1.0e9f;
+    runPeak = 1.0e-4f; kickPeak = 1.0e-4f; armed = true; stage = 0; env = 0; followEnv = 0;
     inPow = 0.0156f; preGain = 1.0f; dryPow = wetPow = 1e-6f; agGain = 1.0f;
 }
 
@@ -80,10 +85,19 @@ void RageEngine::startLearn()
 
 void RageEngine::computeControl (const float* l, const float* r, int n)
 {
-    detLP1.set (set.detectHz, 0.707f, (float) rate);
-    detLP2.set (set.detectHz, 0.707f, (float) rate);
+    const bool kickMode = set.trigger == (int) Trigger::Kick;
+    // 808: everything below the freq.  kick: the "punch" band around it, where sub bass is weak
+    const float lp = kickMode ? set.detectHz * 1.6f : set.detectHz;
+    detLP1.set (lp, 0.707f, (float) rate);
+    detLP2.set (lp, 0.707f, (float) rate);
+    kickHP.set (set.detectHz * 0.65f, 0.707f, (float) rate);
 
+    const bool kick = set.trigger == (int) Trigger::Kick;
     const float thr = dbToGain (-2.0f - 16.0f * set.sensitivity);
+    // kick: transient detector. fires when the fast envelope jumps above the slow one
+    const float onsetThr = 1.5f + (1.0f - set.sensitivity) * 1.5f;     // how fast the low end must jump
+    const float loudGate = 0.8f - 0.5f * set.sensitivity;             // how loud vs the biggest hits
+    const float refractory = 0.08f * (float) rate;
     const float attackInc = 1.0f / juce::jmax (1.0f, set.attackMs * 0.001f * (float) rate);
     const float holdSamples = set.holdMs * 0.001f * (float) rate;
     const float relCoef = std::exp (-3.0f / juce::jmax (1.0f, set.releaseMs * 0.001f * (float) rate));
@@ -121,8 +135,29 @@ void RageEngine::computeControl (const float* l, const float* r, int n)
 
         // ---- hit trigger ----
         bool trig = false;
-        if (armed && rel > thr) { trig = true; armed = false; }
-        else if (! armed && rel < thr * 0.6f) armed = true;
+        sinceTrig += 1.0f;
+        if (kick)
+        {
+            // smooth power envelope (ripple-free even on 40 Hz subs)
+            kickHP.tick (detLP2.low);
+            const float kb = kickHP.high;
+            detBuf[(size_t) i] = kb;
+            const float x2 = kb * kb;
+            kickSmooth1.tick (x2); kickSmooth2.tick (kickSmooth1.low);
+            const float k = std::sqrt (juce::jmax (0.0f, kickSmooth2.low));
+            const float before = kickHist.read (kickLag - 1);
+            kickHist.push (k);
+            kickPeak = juce::jmax (k, kickPeak * kickPeakDecay);
+            const float rise = k / (before + 0.02f * kickPeak + 1.0e-6f);
+            const bool loudEnough = kickPeak > 0.002f && k > loudGate * kickPeak;
+            if (armed && loudEnough && rise > onsetThr && sinceTrig > refractory) { trig = true; armed = false; sinceTrig = 0.0f; }
+            else if (! armed && rise < 1.1f) armed = true;
+        }
+        else
+        {
+            if (armed && rel > thr) { trig = true; armed = false; }
+            else if (! armed && rel < thr * 0.6f) armed = true;
+        }
         if (manual && i == 0) trig = true;
 
         if (set.mode == (int) Mode::Hit || manual || stage != 0)
@@ -165,7 +200,7 @@ void RageEngine::computeControl (const float* l, const float* r, int n)
 
     hitLevel.store (maxEnv);
     detectLevel.store (maxRel);
-    threshold.store (thr);
+    threshold.store (kick ? -1.0f : thr);
     scPeak.store (scPk);
 }
 

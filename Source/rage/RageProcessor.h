@@ -38,6 +38,8 @@ public:
     // UI hooks
     void tapHit() { engine.triggerManualHit(); }
     void learn808();
+    void setTrigger (int t);
+    int  getTrigger() const { return (int) apvts.getRawParameterValue ("trigger")->load(); }
     bool isLearning() const { return learning; }
     juce::String getStatus() const { return status; }
 

@@ -35,6 +35,7 @@ inline juce::StringArray crunchBlurbs()
 }
 
 enum class Mode : int { Hit = 0, Follow };
+enum class Trigger : int { Eight08 = 0, Kick };
 
 struct RageSettings
 {
@@ -44,6 +45,7 @@ struct RageSettings
     float slam = 2.0f;        // extra dB on hits
     float idle = 0.0f;        // crunch level between hits (0..1)
     int   mode = (int) Mode::Hit;
+    int   trigger = (int) Trigger::Eight08;
     float attackMs = 2.0f;
     float holdMs = 40.0f;
     float releaseMs = 180.0f;
@@ -97,7 +99,11 @@ private:
     // detection (base rate)
     mime::dsp::SVF detLP1, detLP2, detHP;
     mime::dsp::Envelope detEnv;
-    float runPeak = 1.0e-4f, peakDecay = 0.9999f;
+    mime::dsp::SVF kickSmooth1, kickSmooth2, kickHP;
+    mime::dsp::DelayLine kickHist;
+    int kickLag = 1;
+    float sinceTrig = 1.0e9f;
+    float runPeak = 1.0e-4f, kickPeak = 1.0e-4f, peakDecay = 0.9999f, kickPeakDecay = 0.99999f;
     bool armed = true;
     int stage = 0;           // 0 idle, 1 attack, 2 hold, 3 release
     float env = 0.0f, holdLeft = 0.0f;

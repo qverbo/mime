@@ -54,6 +54,16 @@ RageEditor::RageEditor (RageProcessor& p) : AudioProcessorEditor (p), proc (p)
     modeLabel.setJustificationType (juce::Justification::centred);
     addAndMakeVisible (modeLabel);
 
+    for (auto* b : { &trig808, &trigKick })
+    {
+        b->setColour (juce::TextButton::buttonOnColourId, pink);
+        addAndMakeVisible (*b);
+    }
+    trig808.setTooltip ("Crunch on the 808: long, booming bass hits. Best for trap and rage.");
+    trigKick.setTooltip ("Punch on the kick: short, fast hits. Best for dance, house and four-on-the-floor beats. Works even with a bassline under the kick.");
+    trig808.onClick  = [this] { proc.setTrigger (0); };
+    trigKick.onClick = [this] { proc.setTrigger (1); };
+
     tapButton.setColour (juce::TextButton::buttonColourId, red.withAlpha (0.9f));
     tapButton.setTooltip ("Fire a hit by hand to hear the crunch without a beat.");
     tapButton.onClick = [this] { proc.tapHit(); };
@@ -115,7 +125,16 @@ void RageEditor::timerCallback()
     else flash *= 0.86f;
     flash = juce::jmax (flash, proc.hitLevel() * 0.8f);
     scMeter = juce::jmax (proc.sidechainPeak(), scMeter * 0.85f);
-    learnButton.setButtonText (proc.isLearning() ? "LEARNING..." : "LEARN 808");
+    const int trig = proc.getTrigger();
+    if (trig != shownTrigger)
+    {
+        shownTrigger = trig;
+        trig808.setToggleState (trig == 0, juce::dontSendNotification);
+        trigKick.setToggleState (trig == 1, juce::dontSendNotification);
+        kDetect->label.setText (trig == 1 ? "KICK FREQ" : "808 FREQ", juce::dontSendNotification);
+        repaint();
+    }
+    learnButton.setButtonText (proc.isLearning() ? "LEARNING..." : (trig == 1 ? "LEARN KICK" : "LEARN 808"));
     repaint (photoArea.expanded (24).withBottom (getHeight()));
     repaint (scopeArea);
 }
@@ -164,7 +183,7 @@ void RageEditor::paint (juce::Graphics& g)
         auto ci = c.reduced (18, 10);
         g.setColour (pink);
         g.setFont (font (11.0f, true));
-        g.drawText ("808 HITS", ci.removeFromTop (14), juce::Justification::centredLeft);
+        g.drawText (shownTrigger == 1 ? "KICK HITS" : "808 HITS", ci.removeFromTop (14), juce::Justification::centredLeft);
         g.setColour (text.interpolatedWith (pink, flash));
         g.setFont (font (44.0f, true));
         g.drawText (juce::String (proc.hitCount()), ci, juce::Justification::centredLeft);
@@ -182,7 +201,7 @@ void RageEditor::paint (juce::Graphics& g)
     g.drawText (title, t.removeFromLeft ((int) tw + 20), juce::Justification::centredLeft);
     g.setColour (pink);
     g.setFont (font (14.0f));
-    g.drawText ("crunches your vocal every time the 808 hits.", t, juce::Justification::centredLeft);
+    g.drawText (shownTrigger == 1 ? "punches your vocal every time the kick hits." : "crunches your vocal every time the 808 hits.", t, juce::Justification::centredLeft);
 
     // sidechain meter next to TAP
     {
@@ -209,9 +228,11 @@ void RageEditor::paint (juce::Graphics& g)
         auto plot = s.reduced (14.0f, 12.0f);
         g.setColour (dim);
         g.setFont (font (11.0f, true));
-        g.drawText ("808 DETECTOR", plot.removeFromTop (14.0f), juce::Justification::centredLeft);
+        auto head = plot.removeFromTop (26.0f);
+        g.drawText ("TRIGGER ON", head.removeFromLeft (80.0f), juce::Justification::centredLeft);
         g.setColour (ghost); g.setFont (font (11.0f));
-        g.drawText ("808 level   - - threshold   crunch", plot.withHeight (14.0f).translated (0, -14.0f), juce::Justification::centredRight);
+        g.drawText (shownTrigger == 1 ? "kick level   crunch" : "808 level   - - threshold   crunch", head, juce::Justification::centredRight);
+        plot.removeFromTop (6.0f);
 
         const int N = RageProcessor::historySize;
         const int w0 = proc.histWrite.load();
@@ -235,12 +256,16 @@ void RageEditor::paint (juce::Graphics& g)
         g.setColour (ghost);
         g.strokePath (det, juce::PathStrokeType (1.6f));
 
-        const float ty = yFor (proc.histThreshold.load());
+        const float thv = proc.histThreshold.load();
+        const float ty = yFor (juce::jmax (0.0f, thv));
+        if (thv >= 0.0f && shownTrigger != 1)
+        {
         juce::Path th; th.startNewSubPath (plot.getX(), ty); th.lineTo (plot.getRight(), ty);
         juce::Path dashed; const float dash[] = { 6.0f, 5.0f };
         juce::PathStrokeType (1.2f).createDashedStroke (dashed, th, dash, 2);
         g.setColour (pink.withAlpha (0.8f));
         g.fillPath (dashed);
+        }
     }
 
     // crunch blurb
@@ -261,7 +286,7 @@ void RageEditor::paint (juce::Graphics& g)
     };
     group (hitGroup, "THE HIT");
     group (envGroup, "SHAPE");
-    group (detGroup, "DETECT THE 808");
+    group (detGroup, shownTrigger == 1 ? "DETECT THE KICK" : "DETECT THE 808");
     group (outGroup, "OUTPUT");
 }
 
@@ -279,7 +304,13 @@ void RageEditor::resized()
     area.removeFromTop (2);
     statusArea = area.removeFromTop (20);
     area.removeFromTop (8);
-    scopeArea = area.removeFromTop (130);
+    scopeArea = area.removeFromTop (140);
+    {
+        auto tb = scopeArea.reduced (14, 12).removeFromTop (26).withTrimmedLeft (80);
+        trig808.setBounds (tb.removeFromLeft (70));
+        tb.removeFromLeft (6);
+        trigKick.setBounds (tb.removeFromLeft (70));
+    }
     area.removeFromTop (12);
 
     auto crunchRow = area.removeFromTop (34);

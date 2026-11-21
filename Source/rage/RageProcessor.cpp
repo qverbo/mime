@@ -21,6 +21,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout RageProcessor::createLayout(
     p.push_back (std::make_unique<AudioParameterFloat>  (ParameterID { "slam", 1 }, "Slam", NormalisableRange<float> (0, 9), d.slam, db));
     p.push_back (std::make_unique<AudioParameterFloat>  (ParameterID { "idle", 1 }, "Idle Crunch", NormalisableRange<float> (0, 1), d.idle, pct));
     p.push_back (std::make_unique<AudioParameterChoice> (ParameterID { "mode", 1 }, "Mode", StringArray { "Hit", "Follow" }, d.mode));
+    p.push_back (std::make_unique<AudioParameterChoice> (ParameterID { "trigger", 1 }, "Trigger On", StringArray { "808", "Kick" }, d.trigger));
     p.push_back (std::make_unique<AudioParameterFloat>  (ParameterID { "attack", 1 }, "Attack", skew (0.1f, 50.0f, 5.0f), d.attackMs, ms));
     p.push_back (std::make_unique<AudioParameterFloat>  (ParameterID { "hold", 1 }, "Hold", skew (0.0f, 500.0f, 80.0f), d.holdMs, ms));
     p.push_back (std::make_unique<AudioParameterFloat>  (ParameterID { "release", 1 }, "Release", skew (10.0f, 2000.0f, 250.0f), d.releaseMs, ms));
@@ -41,7 +42,7 @@ RageProcessor::RageProcessor()
                         .withInput  ("Sidechain", juce::AudioChannelSet::stereo(), true)),
       apvts (*this, nullptr, "PARAMS", createLayout())
 {
-    status = "Route your beat into the sidechain. Every 808 hit crunches the vocal. Hit TAP to test without a beat.";
+    status = "Route your beat into the sidechain. Pick 808 or KICK, and every hit crunches the vocal. Hit TAP to test without a beat.";
     startTimerHz (15);
 }
 
@@ -71,6 +72,7 @@ RageSettings RageProcessor::readSettings() const
     RageSettings s;
     s.crunch = (int) v ("crunch");   s.amount = v ("amount");      s.mix = v ("mix");
     s.slam = v ("slam");             s.idle = v ("idle");          s.mode = (int) v ("mode");
+    s.trigger = (int) v ("trigger");
     s.attackMs = v ("attack");       s.holdMs = v ("hold");        s.releaseMs = v ("release");
     s.sensitivity = v ("sens");      s.detectHz = v ("detect");    s.tone = v ("tone");
     s.lowCut = v ("lowcut");         s.autoGain = v ("autogain") > 0.5f;
@@ -112,11 +114,32 @@ void RageProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBu
     }
 }
 
+void RageProcessor::setTrigger (int t)
+{
+    auto set = [this] (const char* id, float v)
+    {
+        if (auto* p = apvts.getParameter (id))
+        { p->beginChangeGesture(); p->setValueNotifyingHost (p->convertTo0to1 (v)); p->endChangeGesture(); }
+    };
+    set ("trigger", (float) t);
+    if (t == (int) Trigger::Kick)
+    {
+        set ("detect", 160.0f); set ("sens", 0.4f); set ("attack", 0.5f); set ("hold", 25.0f); set ("release", 120.0f);
+        setStatus ("KICK mode: punchy timing loaded. Every kick punches the vocal. Hit LEARN to lock onto your kick.");
+    }
+    else
+    {
+        set ("detect", 110.0f); set ("sens", 0.6f); set ("attack", 2.0f); set ("hold", 40.0f); set ("release", 180.0f);
+        setStatus ("808 mode: the crunch follows your 808s. Hit LEARN to lock onto your 808.");
+    }
+}
+
 void RageProcessor::learn808()
 {
     engine.startLearn();
     learning = true;
-    setStatus ("Learning your 808... play the beat for about 6 seconds.");
+    const bool kick = apvts.getRawParameterValue ("trigger")->load() > 0.5f;
+    setStatus (kick ? "Learning your kick... play the beat for about 6 seconds." : "Learning your 808... play the beat for about 6 seconds.");
 }
 
 void RageProcessor::timerCallback()
@@ -126,14 +149,15 @@ void RageProcessor::timerCallback()
         learning = false;
         const float f = engine.learnResult();
         engine.clearLearn();
-        const float detect = juce::jlimit (45.0f, 250.0f, f * 1.7f);
+        const bool kick = apvts.getRawParameterValue ("trigger")->load() > 0.5f;
+        const float detect = juce::jlimit (45.0f, 250.0f, f * (kick ? 2.2f : 1.7f));
         if (auto* p = apvts.getParameter ("detect"))
         {
             p->beginChangeGesture();
             p->setValueNotifyingHost (p->convertTo0to1 (detect));
             p->endChangeGesture();
         }
-        setStatus ("Your 808 sits around " + juce::String (juce::roundToInt (f)) + " Hz. Detector tuned to "
+        setStatus (juce::String (kick ? "Your kick" : "Your 808") + " sits around " + juce::String (juce::roundToInt (f)) + " Hz. Detector tuned to "
                    + juce::String (juce::roundToInt (detect)) + " Hz.");
     }
 }
