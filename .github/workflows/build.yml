@@ -20,7 +20,7 @@ jobs:
         run: cmake -B build -A x64
 
       - name: Build
-        run: cmake --build build --config Release --target MIME_VST3 MIME_Standalone FilipinaRage_VST3 FilipinaRage_Standalone --parallel
+        run: cmake --build build --config Release --target MIME_VST3 MIME_Standalone FilipinaRage_VST3 FilipinaRage_Standalone HexGate_VST3 HexGate_Standalone --parallel
 
       - name: Package
         shell: pwsh
@@ -35,6 +35,11 @@ jobs:
           Copy-Item "build/FilipinaRage_artefacts/Release/Standalone/FILIPINA RAGE.exe" "dist2/FILIPINA RAGE Standalone.exe"
           Compress-Archive -Path dist2/* -DestinationPath FILIPINA-RAGE-Windows.zip
           Copy-Item "build/FilipinaRage_artefacts/Release/VST3/FILIPINA RAGE.vst3/Contents/x86_64-win/FILIPINA RAGE.vst3" "FILIPINA-RAGE.vst3"
+          New-Item -ItemType Directory -Force -Path dist3 | Out-Null
+          Copy-Item -Recurse "build/HexGate_artefacts/Release/VST3/HEX GATE.vst3" "dist3/HEX GATE.vst3"
+          Copy-Item "build/HexGate_artefacts/Release/Standalone/HEX GATE.exe" "dist3/HEX GATE Standalone.exe"
+          Compress-Archive -Path dist3/* -DestinationPath HEX-GATE-Windows.zip
+          Copy-Item "build/HexGate_artefacts/Release/VST3/HEX GATE.vst3/Contents/x86_64-win/HEX GATE.vst3" "HEX-GATE.vst3"
           # single-file .vst3 (the DLL inside the bundle) for drag-and-drop installs
           Copy-Item "build/MIME_artefacts/Release/VST3/MIME.vst3/Contents/x86_64-win/MIME.vst3" "MIME.vst3"
 
@@ -46,20 +51,25 @@ jobs:
             MIME-Windows.zip
             MIME.vst3
             FILIPINA-RAGE-Windows.zip
+            HEX-GATE-Windows.zip
             FILIPINA-RAGE.vst3
+            HEX-GATE-Windows.zip
+            HEX-GATE.vst3
 
       - name: Publish release
         if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v0.1.{0}', github.run_number) }}
-          name: MIME + FILIPINA RAGE ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v0.1.{0}', github.run_number) }}
+          name: MIME / FILIPINA RAGE / HEX GATE ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v0.1.{0}', github.run_number) }}
           target_commitish: ${{ github.sha }}
           body: |
-            **Quickest:** download **MIME.vst3** and/or **FILIPINA-RAGE.vst3** and drag them into `C:\Program Files\Common Files\VST3\`, then rescan plugins in FL Studio.
+            **Quickest:** download **MIME.vst3**, **FILIPINA-RAGE.vst3** or **HEX-GATE.vst3** and drag them into `C:\Program Files\Common Files\VST3\`, then rescan plugins in FL Studio.
             The zips contain the bundle versions plus standalone apps. See the README for sidechain setup.
           files: |
             MIME.vst3
             FILIPINA-RAGE.vst3
+            HEX-GATE.vst3
             MIME-Windows.zip
             FILIPINA-RAGE-Windows.zip
+            HEX-GATE-Windows.zip

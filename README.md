@@ -92,3 +92,15 @@ Put it on your vocal, feed the beat (or just the 808 track) into its sidechain, 
 | **808 / Kick Freq** | Where the detector listens (LEARN sets it) |
 | **Hear detector** | Hear what the detector hears, for tuning. Turn it off after! |
 | **TAP** | Fire a hit by hand to audition the crunch |
+
+---
+
+# HEX GATE
+
+Tempo-synced vocal glitcher. Sixteen steps around the sigil; each one can stutter, roll, reverse, tape-stop, drop or jump an octave, gate, or scatter. Locks to FL's tempo and only glitches while the song plays.
+
+- **Paint** steps with the brush (click, drag, right-click to erase).
+- **Pattern bank**: pick a style (Glitch, Haunt, Chop, Fill, Chaos), hit **REGEN** for six new patterns, click one to load it, lock the ones you love.
+- **Chaos** adds random glitches every bar. **Grid** sets step size (1/8, 1/16, 1/32). **Repeats** sets stutter speed. **Smooth** sets how hard the edits cut. **Swing** grooves it.
+
+Tip: put HEX GATE on a vocal ad-lib bus or the last word of a phrase, and use the **Fill** style for end-of-bar edits.

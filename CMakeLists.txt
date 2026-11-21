@@ -108,6 +108,57 @@ target_link_libraries(FilipinaRage
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
 
+# ---------------------------------------------------------------- HEX GATE
+juce_add_binary_data(HexAssets SOURCES
+    Resources/hex_sigil.png
+    Resources/fonts/GrenzeGotisch-SemiBold.ttf
+    Resources/fonts/Michroma-Regular.ttf
+    Resources/fonts/JetBrainsMono-Medium.ttf)
+
+juce_add_plugin(HexGate
+    COMPANY_NAME "qverbo"
+    COMPANY_WEBSITE "https://github.com/qverbo/mime"
+    BUNDLE_ID com.qverbo.hexgate
+    PLUGIN_MANUFACTURER_CODE Qvrb
+    PLUGIN_CODE Hxgt
+    PRODUCT_NAME "HEX GATE"
+    FORMATS VST3 Standalone
+    IS_SYNTH FALSE
+    NEEDS_MIDI_INPUT FALSE
+    NEEDS_MIDI_OUTPUT FALSE
+    IS_MIDI_EFFECT FALSE
+    EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+    COPY_PLUGIN_AFTER_BUILD FALSE
+    VST3_CATEGORIES Fx)
+
+target_sources(HexGate PRIVATE
+    Source/hex/HexProcessor.cpp
+    Source/hex/HexEditor.cpp
+    Source/hex/HexEngine.cpp
+    Source/hex/HexPattern.cpp)
+
+target_compile_definitions(HexGate PUBLIC
+    JUCE_WEB_BROWSER=0
+    JUCE_USE_CURL=0
+    JUCE_VST3_CAN_REPLACE_VST2=0
+    JUCE_DISPLAY_SPLASH_SCREEN=0)
+
+target_link_libraries(HexGate
+    PRIVATE
+        HexAssets
+        juce::juce_audio_utils
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags)
+
+if(MIME_BUILD_CLI)
+    juce_add_console_app(hex_cli PRODUCT_NAME "hex_cli")
+    target_sources(hex_cli PRIVATE tools/hex_cli.cpp Source/hex/HexEngine.cpp Source/hex/HexPattern.cpp)
+    target_compile_definitions(hex_cli PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
+    target_link_libraries(hex_cli PRIVATE juce::juce_audio_formats juce::juce_data_structures juce::juce_recommended_config_flags)
+endif()
+
 if(MIME_BUILD_CLI)
     juce_add_console_app(rage_cli PRODUCT_NAME "rage_cli")
     target_sources(rage_cli PRIVATE tools/rage_cli.cpp Source/rage/RageEngine.cpp)
