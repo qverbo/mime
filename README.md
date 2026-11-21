@@ -104,3 +104,13 @@ Tempo-synced vocal glitcher. Sixteen steps around the sigil; each one can stutte
 - **Chaos** adds random glitches every bar. **Grid** sets step size (1/8, 1/16, 1/32). **Repeats** sets stutter speed. **Smooth** sets how hard the edits cut. **Swing** grooves it.
 
 Tip: put HEX GATE on a vocal ad-lib bus or the last word of a phrase, and use the **Fill** style for end-of-bar edits.
+
+---
+
+# POSSESSION
+
+Effects for vocal layers. Put one on each layer track, pick its **role** (Double, Harmony, Ad-lib, Whisper, Low), and it rolls six presets built for that role: doublers, chorus/flanger combos, phasers, tape wobble, ghost tails with shimmer, dirt, lo-fi, width and autopan.
+
+- **Beat:** drag the beat file onto POSSESSION (or LOAD BEAT) and presets adapt to it.
+- **Lead vocal:** route the lead into POSSESSION's sidechain (same routing as FILIPINA RAGE). The layer ducks while the lead sings, spreads wider around it (**Bloom**), and the ghost tail fills the gaps when the lead stops.
+- **REGEN / lock / MORE LIKE THIS** work like MIME. Presets are level-matched so you can compare them fairly.
