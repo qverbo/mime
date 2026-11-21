@@ -68,6 +68,53 @@ target_link_libraries(MIME
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)
 
+# ---------------------------------------------------------------- FILIPINA RAGE
+juce_add_binary_data(RageAssets SOURCES Resources/filipina_rage.jpg)
+
+juce_add_plugin(FilipinaRage
+    COMPANY_NAME "qverbo"
+    COMPANY_WEBSITE "https://github.com/qverbo/mime"
+    BUNDLE_ID com.qverbo.filipinarage
+    PLUGIN_MANUFACTURER_CODE Qvrb
+    PLUGIN_CODE Fprg
+    PRODUCT_NAME "FILIPINA RAGE"
+    FORMATS VST3 Standalone
+    IS_SYNTH FALSE
+    NEEDS_MIDI_INPUT FALSE
+    NEEDS_MIDI_OUTPUT FALSE
+    IS_MIDI_EFFECT FALSE
+    EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+    COPY_PLUGIN_AFTER_BUILD FALSE
+    VST3_CATEGORIES Fx Distortion)
+
+target_sources(FilipinaRage PRIVATE
+    Source/rage/RageProcessor.cpp
+    Source/rage/RageEditor.cpp
+    Source/rage/RageEngine.cpp)
+
+target_compile_definitions(FilipinaRage PUBLIC
+    JUCE_WEB_BROWSER=0
+    JUCE_USE_CURL=0
+    JUCE_VST3_CAN_REPLACE_VST2=0
+    JUCE_DISPLAY_SPLASH_SCREEN=0)
+
+target_link_libraries(FilipinaRage
+    PRIVATE
+        RageAssets
+        juce::juce_audio_utils
+        juce::juce_dsp
+    PUBLIC
+        juce::juce_recommended_config_flags
+        juce::juce_recommended_lto_flags
+        juce::juce_recommended_warning_flags)
+
+if(MIME_BUILD_CLI)
+    juce_add_console_app(rage_cli PRODUCT_NAME "rage_cli")
+    target_sources(rage_cli PRIVATE tools/rage_cli.cpp Source/rage/RageEngine.cpp)
+    target_compile_definitions(rage_cli PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
+    target_link_libraries(rage_cli PRIVATE juce::juce_audio_formats juce::juce_dsp juce::juce_data_structures juce::juce_recommended_config_flags)
+endif()
+
 if(MIME_BUILD_CLI)
     juce_add_console_app(mime_cli PRODUCT_NAME "mime_cli")
     target_sources(mime_cli PRIVATE tools/mime_cli.cpp ${MIME_CORE_SOURCES})

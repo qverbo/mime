@@ -57,3 +57,33 @@ cmake --build build --config Release --target MIME_VST3
 ```
 
 JUCE 8 is downloaded automatically. Pushing to `main` builds Windows on GitHub Actions; pushing a `v*` tag also publishes a Release.
+
+---
+
+# FILIPINA RAGE
+
+**Crunches your vocal every time the 808 hits.** Dedicated to my beautiful girlfriend.
+
+Put it on your vocal, feed the beat (or just the 808 track) into its sidechain, and the vocal gets distorted only when the 808 lands. Between hits the vocal stays clean, or as dirty as you set **Idle**.
+
+## Setup (FL Studio)
+1. Download `FILIPINA-RAGE.vst3` from the latest Release and drag it into `C:\Program Files\Common Files\VST3\`, then rescan.
+2. Put FILIPINA RAGE on your **vocal** insert.
+3. Select the **808** (or beat) mixer track, then right-click the arrow at the bottom of the vocal track → **Sidechain to this track**.
+4. In FILIPINA RAGE's wrapper (gear icon) → **Processing**, set the sidechain input to that track.
+5. Play the beat and hit **LEARN 808**. It finds your 808 and tunes the detector in about 6 seconds.
+
+## Controls
+| | |
+|---|---|
+| **Crunch type** | Tube, Tape, Clip, Fuzz, Fold, Crush, Octave, Megaphone, Destroy |
+| **Amount** | How hard the crunch hits |
+| **Hit Mix** | How much crunched voice you hear during a hit |
+| **Slam** | Extra volume push on every hit |
+| **Idle** | Crunch between hits (0 = clean) |
+| **Attack / Hold / Release** | How fast it grabs, how long it stays, how long it fades |
+| **Mode** | *Hit*: every 808 fires a crunch. *Follow*: the crunch rides the 808's volume (long 808s keep crunching) |
+| **Sensitivity** | Higher = quieter 808s trigger too |
+| **808 Freq** | Where the detector listens (LEARN 808 sets it) |
+| **Hear detector** | Hear what the detector hears, for tuning. Turn it off after! |
+| **TAP** | Fire a hit by hand to audition the crunch |
