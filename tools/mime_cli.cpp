@@ -9,6 +9,7 @@
 #include "../Source/analysis/BeatAnalyzer.h"
 #include "../Source/presets/PresetGenerator.h"
 #include <iostream>
+#include <map>
 
 using namespace mime;
 
@@ -135,6 +136,31 @@ int main (int argc, char** argv)
             std::unique_ptr<juce::AudioFormatWriter> w (wav.createWriterFor (new juce::FileOutputStream (f), sr, 2, 24, {}, 0));
             if (w) w->writeFromAudioSampleBuffer (out, 0, out.getNumSamples());
         }
+    }
+
+    // regen sweep: every archetype should appear and render cleanly
+    {
+        std::map<int, juce::String> seen;
+        PresetGenerator sweep;
+        for (int round = 0; round < 60; ++round)
+        {
+            sweep.generate (prof);
+            for (auto& p : sweep.slots)
+            {
+                if (seen.count (p.archetype)) continue;
+                seen[p.archetype] = p.name;
+                MimeEngine eng; eng.prepare (sr, 512, 2); eng.setSettings (p.settings);
+                juce::AudioBuffer<float> out (vocal);
+                for (int pos = 0; pos < out.getNumSamples(); pos += 512)
+                {
+                    const int nn = std::min (512, out.getNumSamples() - pos);
+                    juce::AudioBuffer<float> blk (out.getArrayOfWritePointers(), 2, pos, nn);
+                    eng.process (blk);
+                }
+                stats (juce::String (p.archetype).paddedLeft ('0', 2) + " " + p.name + " (" + p.lane + ")", out);
+            }
+        }
+        std::cout << "archetypes seen in 60 regens: " << seen.size() << " of " << PresetGenerator::numArchetypes() << "\n";
     }
 
     // every style x texture at max settings, mono + stereo, block size changes

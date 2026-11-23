@@ -241,6 +241,151 @@ namespace
                     return s;
                 } });
 
+            // ---------------- expansion pack ----------------
+            auto add = [&a] (juce::StringArray names, const char* lane, const char* shortD, const char* what, const char* best,
+                             Family fam, bool spacey, std::function<float (const BeatProfile&)> fit, std::function<Settings (juce::Random&)> make)
+            { a.push_back ({ names, lane, shortD, what, best, fam, spacey, fit, make }); };
+
+            add ({ "Bleach", "Overexposed", "White Noise Halo" }, "glaive, 2hollis",
+                 "Bright, glaring fuzz with an octave-up sparkle. Hyperpop at full brightness.",
+                 "Fuzz on the mids plus an octave-up shimmer on the top, tilted bright. It sounds like the vocal is blown out by light instead of volume.",
+                 "Hyperpop hooks, fast melodic runs, anything that should sound shiny and loud.",
+                 Aggro, false, [] (const BeatProfile& p) { return 0.4f + 0.35f * (1.0f - p.darkness) + 0.15f * (1.0f - p.grit); },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Fuzz; s.drive = r (g, 0.4f, 0.6f); s.mix = r (g, 0.45f, 0.65f); s.texture = (int) Texture::Octave; s.air = r (g, 0.45f, 0.7f); s.tone = r (g, 0.2f, 0.4f); s.fizz = 0.55f; s.width = r (g, 0.15f, 0.35f); return s; });
+
+            add ({ "Nail Gun", "Rivet", "Jackhammer" }, "Ken Carson, Che",
+                 "Narrow, punchy hard clip that cuts straight through a loud beat.",
+                 "A focused clipper on the middle of the voice with the lows and extreme highs trimmed off, so all the energy lands right where the ear is most sensitive.",
+                 "Rage hooks, chants, shouted lines over a wall of 808s.",
+                 Aggro, false, [] (const BeatProfile& p) { return 0.45f + 0.3f * p.grit + 0.15f * p.subHeavy - 0.2f * p.ethereal; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Clip; s.drive = r (g, 0.65f, 0.9f); s.mix = r (g, 0.55f, 0.8f); s.texture = (int) Texture::Clean; s.focus = r (g, 0.35f, 0.5f); s.body = 0.05f; s.fizz = 0.6f; return s; });
+
+            add ({ "Funeral Lace", "Veil of Ash", "Lace Shroud" }, "Ecco2k, elusin",
+                 "Barely-there tape warmth, glassy octave air and a wide, mournful haze.",
+                 "The core of the voice stays almost clean while a glassy shimmer and a soft ghostly tail spread out to the sides. Delicate and sad.",
+                 "Slow ethereal songs, quiet verses, intros and outros.",
+                 Space, true, [] (const BeatProfile& p) { return 0.25f + 0.5f * p.ethereal + 0.2f * p.darkness; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Tape; s.drive = r (g, 0.1f, 0.25f); s.mix = r (g, 0.5f, 0.7f); s.texture = (int) Texture::Octave; s.air = r (g, 0.35f, 0.6f); s.haze = r (g, 0.45f, 0.7f); s.width = r (g, 0.6f, 0.85f); s.tone = r (g, 0.0f, 0.2f); s.fizz = 0.35f; return s; });
+
+            add ({ "Rust Halo", "Oxide", "Corroded" }, "Sematary, Haunted Mound",
+                 "Warm tube grit with crushed, rusty highs. Old, dark and dirty.",
+                 "Tube saturation thickens the body while the top end gets bit-crushed into a rusty sizzle, then the whole thing is darkened like old metal.",
+                 "Dark verses, horrorcore, layering under a cleaner lead.",
+                 LoFi, false, [] (const BeatProfile& p) { return 0.4f + 0.35f * p.darkness + 0.1f * p.grit; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Tube; s.drive = r (g, 0.45f, 0.65f); s.mix = r (g, 0.55f, 0.8f); s.texture = (int) Texture::Crush; s.air = r (g, 0.3f, 0.5f); s.body = r (g, 0.25f, 0.45f); s.tone = r (g, -0.35f, -0.15f); s.focus = r (g, 0.1f, 0.25f); s.fizz = 0.5f; return s; });
+
+            add ({ "Overdrive Angel", "Seraph Drive", "Burning Wings" }, "Bladee, Yung Lean",
+                 "Pushed tube drive spread wide with a soft sheen. Heavenly but gritty.",
+                 "A hard-driven tube tone blended in at half strength, with sheen on top and the distortion spread across the stereo field. The vocal sounds huge and slightly broken.",
+                 "Melodic cloud-rap hooks, big choruses, emotional peaks.",
+                 Clean, false, [] (const BeatProfile& p) { return 0.45f + 0.2f * p.ethereal + 0.15f * (1.0f - p.grit); },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Tube; s.drive = r (g, 0.6f, 0.8f); s.mix = r (g, 0.35f, 0.55f); s.texture = (int) Texture::Sheen; s.air = r (g, 0.3f, 0.5f); s.width = r (g, 0.5f, 0.8f); s.haze = r (g, 0.05f, 0.2f); s.fizz = 0.5f; return s; });
+
+            add ({ "Pager", "Beeper", "Burner Phone" }, "Nettspend, 2hollis",
+                 "Light digital crush squeezed into a bright, narrow band. Like a voice note from a cheap phone.",
+                 "A gentle bit-crush on the mids, band-limited and tilted bright, so the vocal sounds like it's coming out of a tiny phone speaker without getting harsh.",
+                 "Intros, ad-libs, contrast sections, half-time switch-ups.",
+                 LoFi, false, [] (const BeatProfile& p) { return 0.45f + 0.15f * p.grit + 0.1f * (1.0f - p.darkness); },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Crush; s.drive = r (g, 0.25f, 0.4f); s.mix = r (g, 0.7f, 0.95f); s.texture = (int) Texture::Clean; s.focus = r (g, 0.55f, 0.75f); s.tone = r (g, 0.2f, 0.4f); s.fizz = 0.45f; return s; });
+
+            add ({ "Molten", "Magma Throat", "Slag" }, "Destroy Lonely, Ken Carson",
+                 "Thick, dark fuzz with folded edges and a heavy low end. Slow-burning menace.",
+                 "Fuzz on the mids, a metallic fold on the top and extra low-end warmth, all darkened. It sounds heavy and molten rather than bright and loud.",
+                 "Slow menacing verses, dark rage, low-register delivery.",
+                 Aggro, false, [] (const BeatProfile& p) { return 0.4f + 0.3f * p.darkness + 0.15f * p.subHeavy; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Fuzz; s.drive = r (g, 0.6f, 0.8f); s.mix = r (g, 0.45f, 0.65f); s.texture = (int) Texture::Fold; s.air = r (g, 0.2f, 0.35f); s.body = r (g, 0.35f, 0.55f); s.tone = r (g, -0.4f, -0.2f); s.fizz = 0.55f; return s; });
+
+            add ({ "Ghost Signal", "Dead Air", "Numbers Station" }, "Salem, elusin",
+                 "Folded, band-limited voice drifting through haze. A transmission from somewhere else.",
+                 "A wavefolded midrange squeezed into a radio-like band, smeared into a foggy tail and spread wide. Eerie and distant.",
+                 "Witch house, intros, chants, background layers.",
+                 Space, true, [] (const BeatProfile& p) { return 0.25f + 0.5f * p.ethereal + 0.15f * p.darkness; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Fold; s.drive = r (g, 0.35f, 0.55f); s.mix = r (g, 0.55f, 0.8f); s.texture = (int) Texture::Clean; s.focus = r (g, 0.5f, 0.7f); s.haze = r (g, 0.4f, 0.65f); s.width = r (g, 0.5f, 0.8f); s.tone = r (g, -0.15f, 0.05f); s.fizz = 0.45f; return s; });
+
+            add ({ "Paper Cut", "Razor Thin", "Hairline" }, "Che, Nettspend",
+                 "Barely clipped, with crisp air on top. Adds bite without sounding distorted.",
+                 "A very light clip on the mids and a lot of sheen on the highs. The vocal gets a sharp, papery edge that cuts through but still sounds clean.",
+                 "Main vocals that need to cut, fast flows, dense beats.",
+                 Clean, false, [] (const BeatProfile& p) { return 0.45f + 0.2f * p.grit + 0.2f * p.darkness; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Clip; s.drive = r (g, 0.15f, 0.3f); s.mix = r (g, 0.55f, 0.8f); s.texture = (int) Texture::Sheen; s.air = r (g, 0.55f, 0.8f); s.tone = r (g, 0.1f, 0.25f); s.fizz = 0.35f; return s; });
+
+            add ({ "Velour", "Crushed Velvet", "Plush" }, "Yung Lean, Bladee",
+                 "Warm, heavy tape with a thick body and soft top. Smooth and close.",
+                 "Pushes the voice into warm tape saturation with extra low-end body and a gently rolled-off top. Intimate and rich.",
+                 "Moody verses, sung hooks, slower songs.",
+                 Clean, false, [] (const BeatProfile& p) { return 0.45f + 0.2f * p.grit + 0.1f * (1.0f - p.darkness); },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Tape; s.drive = r (g, 0.35f, 0.55f); s.mix = r (g, 0.5f, 0.7f); s.texture = (int) Texture::Clean; s.body = r (g, 0.4f, 0.6f); s.tone = r (g, -0.3f, -0.1f); s.fizz = 0.35f; return s; });
+
+            add ({ "Chainsaw", "Bandsaw", "Ripcord" }, "Ken Carson, Homixide Gang",
+                 "Maximum fuzz blended in parallel. Brutal grit that never buries the words.",
+                 "Fuzz cranked all the way up but mixed in low, so you get a ripping layer of grit under a still-readable vocal. The fizz control keeps it from shredding your ears.",
+                 "The hardest rage hooks, screamed sections, drops.",
+                 Aggro, false, [] (const BeatProfile& p) { return 0.4f + 0.2f * p.subHeavy + 0.15f * (1.0f - p.ethereal); },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Fuzz; s.drive = r (g, 0.85f, 1.0f); s.mix = r (g, 0.28f, 0.42f); s.texture = (int) Texture::Sheen; s.air = r (g, 0.2f, 0.35f); s.focus = r (g, 0.15f, 0.3f); s.fizz = 0.75f; return s; });
+
+            add ({ "Moth Wing", "Dust Wing", "Lantern Moth" }, "2hollis, Ecco2k",
+                 "Soft folding with octave flutter and a light haze. Fragile and fluttery.",
+                 "A gentle wavefold gives the voice a papery, fluttering texture, with an octave-up glow on top and a light haze spreading it out.",
+                 "Airy melodies, falsetto, delicate hooks.",
+                 Space, false, [] (const BeatProfile& p) { return 0.35f + 0.3f * p.ethereal + 0.2f * p.darkness; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Fold; s.drive = r (g, 0.2f, 0.35f); s.mix = r (g, 0.4f, 0.6f); s.texture = (int) Texture::Octave; s.air = r (g, 0.3f, 0.5f); s.haze = r (g, 0.2f, 0.4f); s.width = r (g, 0.4f, 0.65f); s.fizz = 0.4f; return s; });
+
+            add ({ "Cellar", "Root Cellar", "Crawlspace" }, "Haunted Mound, Sematary",
+                 "Muffled tape with crushed sparkle and a short haze. Recorded in a basement.",
+                 "Tape saturation, band-limited and darkened, with a little digital crush on top and a short tail, like a voice recorded through a floor.",
+                 "Lo-fi verses, dark interludes, doubles.",
+                 LoFi, false, [] (const BeatProfile& p) { return 0.4f + 0.35f * p.darkness + 0.1f * p.ethereal; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Tape; s.drive = r (g, 0.4f, 0.6f); s.mix = r (g, 0.7f, 0.9f); s.texture = (int) Texture::Crush; s.air = r (g, 0.15f, 0.3f); s.focus = r (g, 0.4f, 0.55f); s.tone = r (g, -0.4f, -0.2f); s.haze = r (g, 0.1f, 0.25f); s.fizz = 0.4f; return s; });
+
+            add ({ "Neon Grave", "Strobe Crypt", "Laser Tomb" }, "Crystal Castles, Salem",
+                 "Hard clip with a piercing octave edge, spread wide. Dark but electric.",
+                 "Clipped mids, octave-up shimmer on top and a wide stereo spread. It's harsh and bright in the highs but sits on a dark, heavy core.",
+                 "Electronic witch house, aggressive hooks, synth-heavy beats.",
+                 Aggro, true, [] (const BeatProfile& p) { return 0.35f + 0.25f * p.ethereal + 0.2f * p.grit; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Clip; s.drive = r (g, 0.55f, 0.75f); s.mix = r (g, 0.45f, 0.65f); s.texture = (int) Texture::Octave; s.air = r (g, 0.4f, 0.6f); s.width = r (g, 0.5f, 0.75f); s.haze = r (g, 0.1f, 0.25f); s.fizz = 0.6f; return s; });
+
+            add ({ "Hollow Tube", "Organ Pipe", "Drainpipe" }, "elusin, Salem",
+                 "Tube grit squeezed into a hollow band with a short haze. Like singing into a pipe.",
+                 "Tube saturation, band-limited so the voice sounds hollow and boxy, then smeared slightly so it rings like a pipe or tunnel.",
+                 "Witch house, eerie ad-libs, background chants.",
+                 LoFi, true, [] (const BeatProfile& p) { return 0.35f + 0.3f * p.ethereal + 0.15f * p.darkness; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Tube; s.drive = r (g, 0.4f, 0.6f); s.mix = r (g, 0.6f, 0.85f); s.texture = (int) Texture::Clean; s.focus = r (g, 0.3f, 0.45f); s.haze = r (g, 0.25f, 0.4f); s.width = r (g, 0.2f, 0.4f); s.fizz = 0.4f; return s; });
+
+            add ({ "Static Bloom", "Snowfield", "Frost Static" }, "Bladee, Ecco2k",
+                 "A low-blend digital crush blooming into a wide, soft haze. Fuzzy, frozen and dreamy.",
+                 "A crushed copy of the voice tucked under the clean one, with polish on top and a wide haze. Like snow static on an old screen.",
+                 "Dreamy hooks, cloud rap, background layers.",
+                 Space, true, [] (const BeatProfile& p) { return 0.3f + 0.4f * p.ethereal + 0.15f * (1.0f - p.grit); },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Crush; s.drive = r (g, 0.35f, 0.55f); s.mix = r (g, 0.25f, 0.4f); s.texture = (int) Texture::Sheen; s.air = r (g, 0.3f, 0.5f); s.haze = r (g, 0.45f, 0.7f); s.width = r (g, 0.55f, 0.8f); s.fizz = 0.4f; return s; });
+
+            add ({ "Teeth", "Jawbone", "Bite Mark" }, "Sematary, Ken Carson",
+                 "Heavy folding plus crushed highs, blended low. Gnarly and snarling.",
+                 "A hard wavefold on the mids with crushed top end, mixed in parallel. It adds a snarling, toothy edge under the vocal.",
+                 "Aggressive ad-libs, horrorcore, doubles.",
+                 Aggro, false, [] (const BeatProfile& p) { return 0.4f + 0.2f * p.grit + 0.2f * p.darkness; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Fold; s.drive = r (g, 0.7f, 0.9f); s.mix = r (g, 0.25f, 0.4f); s.texture = (int) Texture::Crush; s.air = r (g, 0.35f, 0.55f); s.fizz = 0.55f; s.width = r (g, 0.1f, 0.3f); return s; });
+
+            add ({ "Satin Fuzz", "Soft Buzz", "Silk Static" }, "2hollis, Yung Lean",
+                 "Gentle fuzz with sheen. A smooth, warm buzz instead of a harsh one.",
+                 "Fuzz at low drive and medium blend with a polished top. The voice gets a soft, buzzing glow that sits nicely in a mix.",
+                 "Sung hooks, melodic verses, anything that needs warmth with a little edge.",
+                 Clean, false, [] (const BeatProfile& p) { return 0.45f + 0.15f * p.grit + 0.1f * p.darkness; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Fuzz; s.drive = r (g, 0.25f, 0.4f); s.mix = r (g, 0.35f, 0.5f); s.texture = (int) Texture::Sheen; s.air = r (g, 0.25f, 0.45f); s.fizz = 0.45f; s.width = r (g, 0.1f, 0.3f); return s; });
+
+            add ({ "Bonefire", "Pyre", "Ember Bones" }, "Sematary, Haunted Mound",
+                 "Heavy tube burn with folded crackle and smoke. Ritualistic and dark.",
+                 "Hard-driven tube saturation with a crackling fold on top, a darker tone and a bit of smoky haze. Sounds like a voice through fire.",
+                 "Dark hooks, chants, horrorcore, witch house.",
+                 LoFi, true, [] (const BeatProfile& p) { return 0.35f + 0.3f * p.darkness + 0.2f * p.ethereal; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Tube; s.drive = r (g, 0.7f, 0.9f); s.mix = r (g, 0.45f, 0.65f); s.texture = (int) Texture::Fold; s.air = r (g, 0.25f, 0.45f); s.tone = r (g, -0.3f, -0.1f); s.haze = r (g, 0.2f, 0.35f); s.fizz = 0.55f; return s; });
+
+            add ({ "Siren Shock", "Klaxon", "Alarm Bell" }, "glaive, 2hollis",
+                 "Clipped, piercing and very bright. An alarm cutting through everything.",
+                 "Clipped mids, octave-up glare on top and a bright tilt. It's intense, so use it for moments that need to jump out.",
+                 "Hyperpop drops, one-line hooks, ad-libs that need to scream.",
+                 Aggro, false, [] (const BeatProfile& p) { return 0.35f + 0.35f * (1.0f - p.darkness) + 0.1f * p.grit; },
+                 [] (juce::Random& g) { Settings s; s.style = (int) Style::Clip; s.drive = r (g, 0.6f, 0.8f); s.mix = r (g, 0.5f, 0.7f); s.texture = (int) Texture::Octave; s.air = r (g, 0.5f, 0.75f); s.tone = r (g, 0.3f, 0.5f); s.focus = r (g, 0.1f, 0.2f); s.fizz = 0.65f; return s; });
+
             return a;
         }();
         return list;
